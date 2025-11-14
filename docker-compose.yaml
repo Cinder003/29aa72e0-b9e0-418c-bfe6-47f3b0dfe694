@@ -1,0 +1,29 @@
+services:
+  backend:
+    build: ./Backend
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./Backend/data:/usr/src/app/data
+    env_file:
+      - ./Backend/.env
+    environment:
+      - DATABASE_URL=file:./data/dev.db
+      - NODE_ENV=production
+    networks:
+      - app-network
+
+  frontend:
+    build: ./Front-end
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+    environment:
+      - VITE_API_BASE_URL=http://localhost:3001/api
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
