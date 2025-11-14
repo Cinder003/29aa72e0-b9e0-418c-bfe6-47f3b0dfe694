@@ -5,8 +5,8 @@ const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
 });
 
-export const getProspects = async (searchTerm: string = ''): Promise<IProspect[]> => {
-  const response = await api.get(`/prospects?search=${searchTerm}`);
+export const getProspects = async (searchTerm: string = '', status: string = ''): Promise<IProspect[]> => {
+  const response = await api.get(`/prospects?search=${searchTerm}&status=${status}`);
   return response.data;
 };
 

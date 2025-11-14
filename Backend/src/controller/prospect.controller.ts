@@ -1,20 +1,26 @@
 import { Request, Response, NextFunction } from 'express';
-import { PrismaClient } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
 export const getAllProspects = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { search } = req.query;
-    const where = search
-      ? {
-          OR: [
-            { name: { contains: String(search), mode: 'insensitive' } },
-            { email: { contains: String(search), mode: 'insensitive' } },
-            { company: { contains: String(search), mode: 'insensitive' } },
-          ],
-        }
-      : {};
+    const { search, status } = req.query;
+    
+    const where: Prisma.ProspectWhereInput = {};
+
+    if (search) {
+      where.OR = [
+        { name: { contains: String(search), mode: 'insensitive' } },
+        { email: { contains: String(search), mode: 'insensitive' } },
+        { company: { contains: String(search), mode: 'insensitive' } },
+      ];
+    }
+
+    if (status && ['NEW', 'CONTACTED', 'QUALIFIED', 'CONVERTED'].includes(String(status).toUpperCase())) {
+      where.status = String(status).toUpperCase() as any;
+    }
+
     const prospects = await prisma.prospect.findMany({ where, orderBy: { createdAt: 'desc' } });
     res.status(200).json(prospects);
   } catch (error) {

@@ -8,11 +8,11 @@ export const useProspects = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchProspects = useCallback(async (searchTerm: string = '') => {
+  const fetchProspects = useCallback(async (searchTerm: string = '', status: string = '') => {
     setIsLoading(true);
     setError(null);
     try {
-      const data = await prospectsApi.getProspects(searchTerm);
+      const data = await prospectsApi.getProspects(searchTerm, status);
       setProspects(data);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'An unknown error occurred';
@@ -24,30 +24,22 @@ export const useProspects = () => {
   }, []);
 
   const addProspect = async (prospectData: ProspectData) => {
-    setIsLoading(true);
     try {
       const newProspect = await prospectsApi.createProspect(prospectData);
-      setProspects(prev => [newProspect, ...prev]);
+      setProspects(prev => [newProspect, ...prev].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
       toast.success('Prospect added successfully!');
     } catch (err) {
-      toast.error('Failed to add prospect. Email may already exist.');
-      throw err;
-    } finally {
-      setIsLoading(false);
+      toast.error('Failed to add prospect.');
     }
   };
 
   const editProspect = async (id: number, prospectData: Partial<ProspectData>) => {
-    setIsLoading(true);
     try {
       const updatedProspect = await prospectsApi.updateProspect(id, prospectData);
       setProspects(prev => prev.map(p => (p.id === id ? updatedProspect : p)));
       toast.success('Prospect updated successfully!');
     } catch (err) {
       toast.error('Failed to update prospect.');
-      throw err;
-    } finally {
-      setIsLoading(false);
     }
   };
 
